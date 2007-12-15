@@ -1,0 +1,67 @@
+foo
+bar
+buz
+[dump #DUMP]
+$VAR1 = {
+          'bar' => 'buz',
+          'foo' => 'bar'
+        };
+[yaml #YAML]
+---
+bar: buz
+foo: bar
+[TRACE name:$trace line:15] 1
+[TRACE name:$trace line:16] 2
+[TRACE name:$trace line:17] 3
+[TRACE name:$trace line:18] 4
+[TRACE name:$trace line:19] tracing message
+[TRACE name:$trace line:22 #DUMP]
+$VAR1 = {
+          'hoge' => 'huga'
+        };
+[TRACE name:@trace line:23 #DUMP]
+$VAR1 = 'foo';
+$VAR2 = 'bar';
+$VAR3 = 'buz';
+[TRACE name:$trace line:24 #DUMP]
+$VAR1 = [
+          'foo',
+          'bar',
+          'buz'
+        ];
+[TRACE name:$trace line:73 #DUMP]
+$VAR1 = [
+          'foo',
+          'bar',
+          'buz'
+        ];
+[TRACE name:$trace line:76 #DUMP]
+$VAR1 = [
+          'foo',
+          'bar',
+          'buz'
+        ];
+[TRACE name:$trace line:79 #DUMP]
+$VAR1 = [
+          'foo',
+          'bar',
+          'buz'
+        ];
+[TRACE name:$trace line:82 #DUMP]
+$VAR1 = [
+          'foo',
+          'bar',
+          'buz'
+        ];
+[TRACE name:$trace line:85 #DUMP]
+$VAR1 = [
+          'foo',
+          'bar',
+          'buz'
+        ];
+[TRACE name:$trace line:88 #DUMP]
+$VAR1 = [
+          'foo',
+          'bar',
+          'buz'
+        ];

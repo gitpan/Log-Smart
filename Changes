@@ -1,0 +1,11 @@
+Revision history for Log-Smart
+
+0.005   20071215
+        - This module name changes Debug::Smart to Log::Smart.
+          I mistake naming wrong name. 
+          (Thanks to nadim khemir)
+        - File handles creates once when import time. 
+        - Remove Path::Class. 
+        - Added CLOSE method.
+
+

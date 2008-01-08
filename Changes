@@ -1,5 +1,9 @@
 Revision history for Log-Smart
 
+0.006   20080107
+        - Fixed IO::File Insecure dependency problem.
+        - Fixed -append option 
+
 0.005   20071215
         - This module name changes Debug::Smart to Log::Smart.
           I mistake naming wrong name. 

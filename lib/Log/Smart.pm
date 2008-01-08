@@ -2,7 +2,7 @@ package Log::Smart;
 
 use warnings;
 use strict;
-our $VERSION = '0.005';
+our $VERSION = '0.006';
 
 use 5.008;
 use Carp;
@@ -14,8 +14,6 @@ our @EXPORT_OK = qw(TRACE);
 my $arg_ref; # options
 my $fhs_ref; # file handles
 
-#use Data::Dumper; 
-#my $test = IO::File->new("/home/kaz/dev/Log-Smart/lib/Log/test", "a") or croak "can't open test fh.";
 
 sub import {
     my $package = shift;
@@ -104,10 +102,13 @@ sub _tracefilter {
 
 sub _open {
     my $arg = shift;
-    croak "[Log::Smsart]permission denied.
+    croak "[Log::Smart]permission denied.
       the output directory checks for write permission."
         unless -w "$arg->{-path}";
-    my $mode = $arg->{append} ? 'a' : 'w';
+
+    # IO::File has insecure dependency problem.
+    # Now, therefore not 'w' or '+<' but O_* mode. 
+    my $mode = $arg->{append} ? O_APPEND | O_CREAT : O_WRONLY | O_CREAT;
     my $fh = IO::File->new("$arg->{-path}/$arg->{-name}", $mode) or
         croak "IO::File can't open the file : "
         . $arg->{-path} . " name : " . $arg->{-name};
@@ -203,7 +204,7 @@ Log::Smart - Messages for smart logging to the file
 
 =head1 VERSION
 
-version 0.004
+version 0.006
 
 =cut
 

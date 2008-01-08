@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Log-Smart
-version:             0.006
+version:             0.007
 abstract:            Messages for smart logging to the file 
 license:             perl
 generated_by:        ExtUtils::MakeMaker version 6.36

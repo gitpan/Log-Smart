@@ -2,7 +2,7 @@ package Log::Smart;
 
 use warnings;
 use strict;
-our $VERSION = '0.006';
+our $VERSION = '0.007';
 
 use 5.008;
 use Carp;
@@ -108,7 +108,7 @@ sub _open {
 
     # IO::File has insecure dependency problem.
     # Now, therefore not 'w' or '+<' but O_* mode. 
-    my $mode = $arg->{append} ? O_APPEND | O_CREAT : O_WRONLY | O_CREAT;
+    my $mode = $arg->{-append} ? O_APPEND | O_CREAT : O_WRONLY | O_CREAT;
     my $fh = IO::File->new("$arg->{-path}/$arg->{-name}", $mode) or
         croak "IO::File can't open the file : "
         . $arg->{-path} . " name : " . $arg->{-name};
@@ -204,7 +204,7 @@ Log::Smart - Messages for smart logging to the file
 
 =head1 VERSION
 
-version 0.006
+version 0.007
 
 =cut
 

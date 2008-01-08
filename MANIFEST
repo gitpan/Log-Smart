@@ -2,16 +2,13 @@
 Changes
 lib/Log/Smart.pm
 Makefile.PL
-MANIFEST
+MANIFEST			This list of files
 README
 t/00-load.t
-t/inheritance.debug
 t/inheritance.t
 t/InheritanceTest.pm
-t/main.smart_log
 t/method.t
 t/pod-coverage.t
 t/pod.t
-t/test/Test.debug
 t/test/Test.pm
 META.yml                                 Module meta-data (added by MakeMaker)

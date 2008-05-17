@@ -1,5 +1,12 @@
 Revision history for Log-Smart
 
+0.09    20080517
+        - Delete trace mode.
+        - default logfile name changes *.smart_log to *.log
+
+0.08    20080211
+        - Skip YAML tests if YAML not installed.
+
 0.007   20080109
         - Fixed can't use -append option 
 

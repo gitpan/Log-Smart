@@ -2,7 +2,7 @@ package Log::Smart;
 
 use warnings;
 use strict;
-our $VERSION = '0.007';
+our $VERSION = '0.009';
 
 use 5.008;
 use Carp;
@@ -10,7 +10,6 @@ use IO::File;
 use base qw(Exporter);
 
 our @EXPORT = qw(LOG YAML DUMP CLOSE);
-our @EXPORT_OK = qw(TRACE);
 my $arg_ref; # options
 my $fhs_ref; # file handles
 
@@ -25,7 +24,7 @@ sub import {
     my $arg;
     $file =~ m/(.*)\/.*\z/xms;
     $arg->{-path} = $1;
-    $arg->{-name} = "$caller_package.smart_log";
+    $arg->{-name} = "$caller_package.log";
     $arg->{-timestamp} = $FALSE;
 
     my @symbols = ();
@@ -45,11 +44,6 @@ sub import {
             elsif ($key =~ /-append/) {
                 $arg->{$key} = $TRUE;
             }
-            elsif ($key =~ /-trace/) {
-                $arg->{$key} = shift;
-                push @symbols, 'TRACE';
-                _tracefilter($arg);
-            }
         }
         else {
             push @symbols, $key;
@@ -61,44 +55,6 @@ sub import {
     Exporter::export($package, $caller_package, @symbols);
 }
 
-sub _tracefilter {
-    my $arg = shift;
-    require Filter::Util::Call;
-    my $done = 0;
-    Filter::Util::Call::filter_add(
-        sub {
-            return 0 if $done;
-            my ($data, $end) = ('', '');
-            while (my $status = Filter::Util::Call::filter_read()) {
-                return $status if $status < 0;
-                if (/^__(?:END|DATA)__\r?$/) {
-                    $end = $_;
-                    last;
-                }
-                $data .= $_;
-                $_ = '';
-            }
-            $_ = $data;
-            my $target = $arg->{-trace};
-            if (ref $target eq 'ARRAY') {
-                foreach my $val (@{$target}) {
-                    my $name = "'$val'";
-                    my $escape = '\\' . $val;
-                    s{([^;]*$escape[^;]*;)}{$1TRACE $name => $val;}gm;
-                }
-            }
-            elsif (not ref $target) {
-                my $name = "'$target'";
-                my $escape = '\\' . $target;
-                s{([^;]*$escape[^;]*;)}{$1TRACE $name => $target;}gm;
-            }
-            else {
-                croak 'You should use SCALAR or ARRAY REF : ' . ref $target;
-            }
-            $done = 1;
-        }
-    );
-}
 
 sub _open {
     my $arg = shift;
@@ -166,31 +122,6 @@ sub YAML {
     return wantarray ? @_ : $_[0];
 }
 
-sub TRACE {
-    my $name = shift;
-    my ($caller_package, $caller_name, $line) = caller(0);
-    my $message = "TRACE name:$name line:$line";
-    my $fh    = $fhs_ref->{ caller(0) };
-    my $arg   = $arg_ref->{ caller(0) };
-    if (scalar(@_) == 1) {
-        my $value = shift @_;
-        my $type = ref $value;
-        if ($type eq 'SCALAR' || $type eq '') {
-            _log($fh, $arg, "[$message] $value");
-        }
-        elsif ($type eq 'ARRAY' || $type eq 'HASH' || $type eq 'REF') {
-            _dump($fh, $arg, $message, $value);
-        }
-        elsif ($type eq 'CODE' || $type eq 'GLOB') {
-            croak "Can't trace CODE or GLOB type.";
-        }
-    }
-    else {
-        _dump($fh, $arg, $message, @_);
-    }
-    $fh->flush;
-}
-
 sub CLOSE {
     $fhs_ref->{ caller(0) }->close;
     delete $$fhs_ref{ caller(0) };
@@ -204,7 +135,7 @@ Log::Smart - Messages for smart logging to the file
 
 =head1 VERSION
 
-version 0.007
+version 0.009
 
 =cut
 
@@ -222,56 +153,36 @@ B<Log::Smart> provides logging methods that is easy to use.
 
 This module automatically creates and opens the file for logging.
 It is created to location of the file that used this module.
-And name of the file is the namespace + I<.smart_log> with using this module.
+And name of the file is the namespace + I<.log> with using this module.
+
 It exports a function that you can put just about anywhere
-in your Perl code tomake it logging.
+in your Perl code to make it logging.
 
 To change the location or filename, you can use the options.
 Please refer to B<OPTIONS> for more information on.
 
+
     package Example;
 
     use Log::Smart;
-    #file name "Example.smart_log"
+    #file name "Example.log"
 
 
     package Example;
     
-    use Log::Smart -name => 'mydebug.log';
-    #file name "mydebug.log"
+    use Log::Smart -name => 'mydebug.mylog';
+    #file name "mydebug.mylog"
 
 B<WARNING:>
-This module automatically determines the output location and the filename when
-you don't use some options.
+This module automatically determines the output location(need write permission) and the filename when you don't use some options.
 You should carefully use it, otherwise the file of same name is overwrited.
-And this module uses a source filter.  If you don't like that, don't use this.
 
 =head1 BACKWARD INCOMPATIBILITY
 
 Current version of Log::Smart was once called Debug::Smart.
 When I released this module naming it to Debug::Smart was wrong.
 Debug::Smart was unmatched this module functions.
-Thanks for nadim khemir from review.
-
-=head1 TRACE
-
-You can trace the variables if you use I<-trace> option.
-This option specifies the variable's name that is type of B<SCALAR> or B<ARRAY_REF>.
-B<TRACE> function is automatically added by source code filter(B<Fillter::Util::Call>) and
-outputs the specified variable's value that each time appeared in the source code.
-
-    # you shuld use sigle quote
-    use Log::Smart -trace => '$var';
-
-    my $var = 1;
-    $var = 2;
-    $var = 10;
-
-done.
-
-    my $var = 1;TRACE $var;
-    $var = 2;TRACE $var;
-    $var = 10; TRACE $var;
+Thanks for nadim khemir of review.
 
 =head1 EXPORT
 
@@ -288,11 +199,6 @@ To write the variable structures to the file with Data::Dumper::Dumper.
 =item YAML 
 
 To write the variable structures to the file with YAML::Dump.
-
-=item TRACE
-
-This function traces valiables.
-(TRACE is not export if you don't use I<-trace> option)
 
 =item CLOSE
 
@@ -319,17 +225,6 @@ I<-timestamp> option add timestamp to the head of logging message.
 I<-append> option is append mode. Writing at end-of-file.
 Default is write mode. It will be overwritten.
 
-    use Log::Smart -trace => '$foo';
-or
-    use Log::Smart -trace => ['$foo', '$bar'];
-
-I<-trace> option traces the variable of specified the name. 
-You should write the single quoted variable's name.
-
-=head1 SEE ALSO
-
-Filter::Util::Call
-
 =head1 AUTHOR
 
 Kazuhiro Shibuya, C<< <k42uh1r0 at gmail.com> >>
@@ -343,7 +238,7 @@ notified of progress on your bug as I make changes.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2007 Kazuhiro Shibuya, All Rights Reserved.
+Copyright 2007-2008 Kazuhiro Shibuya, All Rights Reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
